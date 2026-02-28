@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CargoFlow — Cargo Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf8f4;
+    --bg-warm: #f3efe8;
+    --bg-dark: #0c1222;
+    --bg-card: #ffffff;
+    --navy: #0c1222;
+    --navy-light: #1a2540;
+    --orange: #e8622a;
+    --orange-light: #ff7a3d;
+    --orange-dim: #e8622a12;
+    --orange-glow: #e8622a28;
+    --teal: #1a8a7d;
+    --text: #0c1222;
+    --text-secondary: #5a6478;
+    --text-muted: #9aa2b4;
+    --border: #e4dfd6;
+    --border-dark: #d4cec3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  section[id] { scroll-margin-top: 80px; }
+
+  /* ========= NAV ========= */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 0 56px; height: 72px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(250,248,244,0.85);
+    backdrop-filter: blur(16px) saturate(1.4);
+    border-bottom: 1px solid transparent;
+    transition: all 0.4s ease;
+    animation: slideDown 0.6s ease;
+  }
+  nav.scrolled {
+    border-bottom-color: var(--border);
+    box-shadow: 0 2px 20px rgba(12,18,34,0.06);
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: var(--navy);
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -0.5px;
+  }
+  .logo-mark {
+    width: 36px; height: 36px; border-radius: 8px; position: relative;
+    background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 12px rgba(232,98,42,0.3);
+  }
+  .logo-mark svg { width: 20px; height: 20px; }
+  .nav-center { display: flex; gap: 32px; list-style: none; }
+  .nav-center a {
+    text-decoration: none; color: var(--text-secondary); font-size: 14px;
+    font-weight: 600; transition: all 0.3s; position: relative; padding: 4px 0;
+  }
+  .nav-center a::after {
+    content: ''; position: absolute; bottom: -2px; left: 0;
+    width: 0; height: 2px; background: var(--orange);
+    border-radius: 1px; transition: width 0.3s;
+  }
+  .nav-center a:hover, .nav-center a.active { color: var(--orange); }
+  .nav-center a:hover::after, .nav-center a.active::after { width: 100%; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-login {
+    font-size: 14px; font-weight: 600; color: var(--text-secondary);
+    text-decoration: none; transition: color 0.3s; padding: 8px 0;
+  }
+  .nav-login:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--navy); color: #fff; border: none;
+    padding: 10px 24px; border-radius: 8px; font-weight: 700; font-size: 13px;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.3s; text-decoration: none; display: inline-block;
+    letter-spacing: 0.2px;
+  }
+  .nav-cta:hover { background: var(--navy-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(12,18,34,0.2); }
+
+  /* ========= HERO ========= */
+  .hero {
+    padding: 160px 56px 100px; position: relative; overflow: hidden;
+    min-height: 100vh; display: flex; align-items: center;
+  }
+  .hero-bg-shape {
+    position: absolute; top: -30%; right: -10%; width: 800px; height: 800px;
+    background: radial-gradient(circle, var(--orange-dim) 0%, transparent 65%);
+    pointer-events: none; animation: floatSlow 12s ease-in-out infinite;
+  }
+  .hero-bg-shape-2 {
+    position: absolute; bottom: -20%; left: -5%; width: 500px; height: 500px;
+    background: radial-gradient(circle, #1a8a7d0a 0%, transparent 65%);
+    pointer-events: none; animation: floatSlow 15s ease-in-out infinite reverse;
+  }
+  .hero-grid {
+    max-width: 1360px; margin: 0 auto; width: 100%;
+    display: grid; grid-template-columns: 1.15fr 1fr; gap: 64px; align-items: center;
+    position: relative; z-index: 1;
+  }
+  .hero-left { animation: fadeUp 0.8s ease 0.15s both; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--orange-dim); border: 1px solid var(--orange-glow);
+    padding: 5px 14px 5px 10px; border-radius: 100px; font-size: 12px;
+    font-weight: 700; color: var(--orange); margin-bottom: 28px;
+    letter-spacing: 0.3px;
+  }
+  .hero-badge svg { flex-shrink: 0; }
+  .hero-left h1 {
+    font-family: 'Syne', sans-serif; font-size: 62px; font-weight: 800;
+    line-height: 1.06; letter-spacing: -2.5px; margin-bottom: 22px;
+    color: var(--navy);
+  }
+  .hero-left h1 .orange { color: var(--orange); }
+  .hero-left h1 .outline {
+    -webkit-text-stroke: 2px var(--navy); color: transparent;
+  }
+  .hero-desc {
+    font-size: 17px; color: var(--text-secondary); line-height: 1.75;
+    max-width: 480px; margin-bottom: 40px;
+  }
+  .hero-actions { display: flex; gap: 14px; margin-bottom: 52px; }
+  .btn-primary {
+    background: var(--orange); color: #fff; border: none;
+    padding: 15px 32px; border-radius: 10px; font-weight: 700; font-size: 15px;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+    text-decoration: none; box-shadow: 0 4px 20px rgba(232,98,42,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(232,98,42,0.35); background: var(--orange-light); }
+  .btn-ghost {
+    background: transparent; color: var(--text); border: 1.5px solid var(--border-dark);
+    padding: 15px 32px; border-radius: 10px; font-weight: 700; font-size: 15px;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+    text-decoration: none;
+  }
+  .btn-ghost:hover { border-color: var(--text-muted); background: var(--bg-warm); }
+
+  .hero-metrics { display: flex; gap: 44px; }
+  .metric { display: flex; flex-direction: column; }
+  .metric-num {
+    font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800;
+    letter-spacing: -1px; color: var(--navy);
+  }
+  .metric-num span { color: var(--orange); }
+  .metric-label { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+
+  /* Hero Right — Tracking Card */
+  .hero-right { animation: fadeUp 0.8s ease 0.4s both; position: relative; }
+  .tracking-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 24px 64px rgba(12,18,34,0.08), 0 2px 8px rgba(12,18,34,0.04);
+    transform: rotate(1deg);
+    transition: transform 0.5s ease;
+  }
+  .tracking-card:hover { transform: rotate(0deg); }
+  .tc-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .tc-header-left { display: flex; align-items: center; gap: 10px; }
+  .tc-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse 2s ease infinite; }
+  .tc-header-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .tc-header-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+  .tc-body { padding: 24px; }
+
+  /* Route visualization */
+  .route-visual {
+    display: flex; align-items: center; gap: 0; margin-bottom: 24px;
+    padding: 20px 0;
+  }
+  .route-point {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    flex-shrink: 0; z-index: 2;
+  }
+  .route-circle {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .route-city { font-size: 11px; font-weight: 700; color: var(--text); letter-spacing: 0.3px; }
+  .route-country { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+  .route-line {
+    flex: 1; height: 3px; background: var(--border); position: relative;
+    border-radius: 2px; margin: 0 -4px; margin-bottom: 28px;
+  }
+  .route-line-fill {
+    position: absolute; top: 0; left: 0; height: 100%;
+    background: linear-gradient(90deg, var(--orange), var(--teal));
+    border-radius: 2px; animation: lineFill 2s ease 1s both;
+  }
+  .route-truck {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-size: 14px; animation: truckMove 3s ease 1s both;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  }
+
+  /* Cargo items */
+  .cargo-items { display: flex; flex-direction: column; gap: 10px; }
+  .cargo-row {
+    display: grid; grid-template-columns: auto 1fr auto auto;
+    gap: 14px; align-items: center;
+    padding: 12px 14px; border-radius: 10px;
+    background: var(--bg); border: 1px solid var(--border);
+    font-size: 13px;
+    animation: fadeUp 0.5s ease calc(1.2s + var(--i, 0) * 0.1s) both;
+  }
+  .cargo-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .cargo-info { display: flex; flex-direction: column; }
+  .cargo-name { font-weight: 700; font-size: 13px; color: var(--text); }
+  .cargo-id { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .cargo-weight { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+  .cargo-status {
+    padding: 4px 10px; border-radius: 100px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase;
+  }
+  .st-transit { background: #e8622a14; color: var(--orange); border: 1px solid #e8622a28; }
+  .st-arrived { background: #22c55e14; color: #16a34a; border: 1px solid #22c55e28; }
+  .st-loading { background: #3b82f614; color: #2563eb; border: 1px solid #3b82f628; }
+
+  /* Floating badge on card */
+  .float-badge {
+    position: absolute; top: -12px; right: 28px;
+    background: var(--navy); color: #fff;
+    padding: 8px 16px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+    box-shadow: 0 6px 16px rgba(12,18,34,0.2);
+    animation: fadeUp 0.6s ease 0.8s both;
+  }
+  .float-badge-2 {
+    position: absolute; bottom: 32px; left: -20px;
+    background: var(--bg-card); color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 16px; border-radius: 10px;
+    font-size: 12px; font-weight: 700;
+    box-shadow: 0 8px 24px rgba(12,18,34,0.08);
+    display: flex; align-items: center; gap: 8px;
+    animation: fadeUp 0.6s ease 1s both;
+  }
+  .float-badge-2 .num { color: var(--orange); font-family: 'Syne'; font-size: 18px; font-weight: 800; }
+
+  /* ========= TRUSTED BY ========= */
+  .trusted {
+    padding: 48px 56px; border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .trusted-inner {
+    max-width: 1360px; margin: 0 auto;
+    display: flex; align-items: center; gap: 48px;
+  }
+  .trusted-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; flex-shrink: 0; }
+  .trusted-logos {
+    display: flex; gap: 40px; align-items: center; flex-wrap: wrap; flex: 1;
+    justify-content: space-between;
+  }
+  .trusted-logo {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+    color: var(--text-muted); opacity: 0.4; letter-spacing: -0.5px;
+    transition: opacity 0.3s;
+  }
+  .trusted-logo:hover { opacity: 0.7; }
+
+  /* ========= SECTION COMMON ========= */
+  .section-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--orange); font-weight: 800; margin-bottom: 16px;
+  }
+  .section-tag .bar { width: 20px; height: 2px; background: var(--orange); border-radius: 1px; }
+  .section-heading {
+    font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 800;
+    letter-spacing: -1.5px; line-height: 1.12; margin-bottom: 16px; color: var(--navy);
+  }
+  .section-sub { color: var(--text-secondary); font-size: 16px; max-width: 520px; margin-bottom: 56px; line-height: 1.7; }
+
+  /* ========= FEATURES ========= */
+  .features { padding: 120px 56px; max-width: 1360px; margin: 0 auto; }
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .f-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px 28px; transition: all 0.4s;
+    position: relative; overflow: hidden;
+  }
+  .f-card:hover { transform: translateY(-5px); box-shadow: 0 16px 48px rgba(12,18,34,0.08); border-color: var(--border-dark); }
+  .f-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--orange), var(--teal));
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .f-card:hover::after { opacity: 1; }
+  .f-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; margin-bottom: 22px;
+  }
+  .f-title { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.3px; }
+  .f-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+  /* ========= HOW IT WORKS ========= */
+  .how-section {
+    padding: 120px 56px; background: var(--bg-dark); color: #fff; position: relative; overflow: hidden;
+  }
+  .how-section .section-tag { color: var(--orange-light); }
+  .how-section .section-tag .bar { background: var(--orange-light); }
+  .how-section .section-heading { color: #fff; }
+  .how-section .section-sub { color: #8892a8; }
+  .how-inner { max-width: 1360px; margin: 0 auto; }
+  .how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+  .how-grid::before {
+    content: ''; position: absolute; top: 40px; left: 10%; right: 10%;
+    height: 2px; background: linear-gradient(90deg, transparent, #2a3550, #2a3550, transparent);
+  }
+  .how-step { text-align: center; position: relative; padding: 0 24px; }
+  .how-num {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+    margin: 0 auto 20px; position: relative; z-index: 2;
+    transition: all 0.4s;
+  }
+  .how-step:hover .how-num { transform: scale(1.1); }
+  .how-step-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+  .how-step-desc { font-size: 13px; color: #6a758c; line-height: 1.7; }
+
+  /* ========= PRICING ========= */
+  .pricing { padding: 120px 56px; max-width: 1360px; margin: 0 auto; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+  .p-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 40px 32px; transition: all 0.4s; position: relative; overflow: hidden;
+  }
+  .p-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(12,18,34,0.08); }
+  .p-card.featured { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange), 0 16px 48px rgba(232,98,42,0.1); }
+  .p-card.featured::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--orange), var(--orange-light));
+  }
+  .p-badge {
+    display: inline-block; background: var(--orange); color: #fff;
+    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    padding: 4px 12px; border-radius: 100px; margin-bottom: 20px;
+  }
+  .p-plan { font-size: 13px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .p-price { font-family: 'Syne', sans-serif; font-size: 46px; font-weight: 800; letter-spacing: -2px; margin-bottom: 4px; color: var(--navy); }
+  .p-price .curr { font-size: 20px; color: var(--text-secondary); vertical-align: super; }
+  .p-price .per { font-size: 15px; font-weight: 400; color: var(--text-muted); }
+  .p-tagline { font-size: 14px; color: var(--text-secondary); margin-bottom: 28px; }
+  .p-features { list-style: none; margin-bottom: 32px; }
+  .p-features li {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; color: var(--text-secondary); padding: 9px 0; border-bottom: 1px solid var(--border);
+  }
+  .p-features li:last-child { border: none; }
+  .p-check { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; font-weight: 800; }
+  .p-check.on { background: #22c55e14; color: #16a34a; }
+  .p-check.off { background: var(--bg-warm); color: var(--text-muted); }
+  .p-btn {
+    width: 100%; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 14px;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.3s; border: none; text-align: center;
+  }
+  .p-btn-solid { background: var(--orange); color: #fff; box-shadow: 0 4px 16px rgba(232,98,42,0.25); }
+  .p-btn-solid:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(232,98,42,0.3); }
+  .p-btn-outline { background: transparent; color: var(--text); border: 1.5px solid var(--border-dark); }
+  .p-btn-outline:hover { background: var(--bg-warm); border-color: var(--text-muted); }
+
+  /* ========= DOCS ========= */
+  .docs { padding: 120px 56px; background: var(--bg-warm); }
+  .docs-inner { max-width: 1360px; margin: 0 auto; }
+  .docs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 40px; }
+  .d-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px 22px; transition: all 0.4s;
+    text-decoration: none; color: inherit; display: block;
+  }
+  .d-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(12,18,34,0.06); border-color: var(--border-dark); }
+  .d-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px; }
+  .d-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .d-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 14px; }
+  .d-link { font-size: 13px; font-weight: 700; color: var(--orange); display: inline-flex; align-items: center; gap: 4px; }
+  .d-link svg { transition: transform 0.3s; }
+  .d-card:hover .d-link svg { transform: translateX(4px); }
+  .docs-cta-bar {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 32px 40px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  }
+  .docs-cta-text h3 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .docs-cta-text p { font-size: 14px; color: var(--text-secondary); }
+
+  /* ========= ABOUT ========= */
+  .about { padding: 120px 56px; }
+  .about-inner { max-width: 1360px; margin: 0 auto; }
+  .about-top { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center; margin-bottom: 96px; }
+  .about-text h2 { font-family: 'Syne', sans-serif; font-size: 38px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 20px; line-height: 1.15; }
+  .about-text p { font-size: 16px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 14px; }
+  .about-numbers { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .about-num-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 28px 22px; text-align: center; transition: all 0.4s;
+  }
+  .about-num-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(12,18,34,0.06); }
+  .about-num-val { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
+  .about-num-lbl { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+  .about-team-title { text-align: center; margin-bottom: 48px; }
+  .team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .t-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 32px 22px; text-align: center; transition: all 0.4s;
+  }
+  .t-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(12,18,34,0.06); }
+  .t-avatar {
+    width: 68px; height: 68px; border-radius: 50%; margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
+    border: 2px solid var(--border);
+  }
+  .t-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+  .t-role { font-size: 12px; color: var(--orange); font-weight: 700; margin-bottom: 8px; }
+  .t-bio { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+  /* ========= CTA ========= */
+  .cta-section { padding: 80px 56px 120px; }
+  .cta-box {
+    max-width: 1000px; margin: 0 auto; text-align: center;
+    background: var(--navy); border-radius: 24px; padding: 80px 64px;
+    position: relative; overflow: hidden;
+  }
+  .cta-box::before {
+    content: ''; position: absolute; top: -80px; right: -80px; width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(232,98,42,0.15), transparent 70%);
+  }
+  .cta-box::after {
+    content: ''; position: absolute; bottom: -60px; left: -60px; width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(26,138,125,0.1), transparent 70%);
+  }
+  .cta-box h2 { font-family: 'Syne', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 14px; position: relative; color: #fff; }
+  .cta-box p { color: #7a86a0; font-size: 16px; margin-bottom: 36px; position: relative; }
+  .cta-btns { display: flex; justify-content: center; gap: 14px; position: relative; }
+
+  /* ========= FOOTER ========= */
+  footer {
+    padding: 40px 56px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    max-width: 1360px; margin: 0 auto;
+  }
+  .foot-left { font-size: 13px; color: var(--text-muted); }
+  .foot-links { display: flex; gap: 28px; }
+  .foot-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color 0.3s; }
+  .foot-links a:hover { color: var(--orange); }
+
+  /* ========= ANIMATIONS ========= */
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes floatSlow { 0%,100% { transform: translate(0,0); } 50% { transform: translate(20px,-20px); } }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 70% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
+  @keyframes lineFill { from { width: 0; } to { width: 68%; } }
+  @keyframes truckMove { from { left: 0; opacity: 0; } to { left: 62%; opacity: 1; } }
+
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#hero" class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>
+    </div>
+    Cargo<span style="color:var(--orange)">Flow</span>
+  </a>
+  <ul class="nav-center">
+    <li><a href="#fitur">Fitur</a></li>
+    <li><a href="#harga">Harga</a></li>
+    <li><a href="#dokumentasi">Dokumentasi</a></li>
+    <li><a href="#tentang">Tentang</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#" class="nav-login">Masuk</a>
+    <a href="#harga" class="nav-cta">Mulai Gratis →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg-shape"></div>
+  <div class="hero-bg-shape-2"></div>
+  <div class="hero-grid">
+    <div class="hero-left">
+      <div class="hero-badge">
+        <svg width="14" height="14" fill="var(--orange)" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Platform Logistik #1 di Indonesia
+      </div>
+      <h1>
+        Kelola Seluruh<br>
+        Kargo Anda<br>
+        <span class="orange">Tanpa Batas.</span>
+      </h1>
+      <p class="hero-desc">
+        Sistem manajemen kargo end-to-end untuk tracking, penjadwalan, dan optimalisasi
+        seluruh pengiriman Anda — dari gudang hingga tujuan akhir.
+      </p>
+      <div class="hero-actions">
+        <a href="#harga" class="btn-primary">
+          Mulai Sekarang
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#fitur" class="btn-ghost">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="currentColor"/></svg>
+          Lihat Demo
+        </a>
+      </div>
+      <div class="hero-metrics">
+        <div class="metric"><div class="metric-num">12,500<span>+</span></div><div class="metric-label">Shipment / Bulan</div></div>
+        <div class="metric"><div class="metric-num">99.4<span>%</span></div><div class="metric-label">On-Time Delivery</div></div>
+        <div class="metric"><div class="metric-num">28<span>%</span></div><div class="metric-label">Cost Reduction</div></div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="float-badge">📦 3 shipment baru hari ini</div>
+      <div class="float-badge-2"><span class="num">98%</span> Delivery Rate</div>
+      <div class="tracking-card">
+        <div class="tc-header">
+          <div class="tc-header-left"><div class="tc-dot"></div><span class="tc-header-title">Live Tracking</span></div>
+          <span class="tc-header-sub">SHP-20260301-042</span>
+        </div>
+        <div class="tc-body">
+          <div class="route-visual">
+            <div class="route-point">
+              <div class="route-circle" style="background:#e8622a14;color:var(--orange)">🏭</div>
+              <span class="route-city">Jakarta</span>
+              <span class="route-country">Indonesia</span>
+            </div>
+            <div class="route-line">
+              <div class="route-line-fill"></div>
+              <div class="route-truck">🚛</div>
+            </div>
+            <div class="route-point">
+              <div class="route-circle" style="background:#1a8a7d14;color:var(--teal)">📍</div>
+              <span class="route-city">Surabaya</span>
+              <span class="route-country">Indonesia</span>
+            </div>
+          </div>
+
+          <div class="cargo-items">
+            <div class="cargo-row" style="--i:0">
+              <div class="cargo-icon" style="background:#e8622a0e">📦</div>
+              <div class="cargo-info"><span class="cargo-name">Elektronik Consumer</span><span class="cargo-id">CGO-7821</span></div>
+              <span class="cargo-weight">2.4 Ton</span>
+              <span class="cargo-status st-transit">Transit</span>
+            </div>
+            <div class="cargo-row" style="--i:1">
+              <div class="cargo-icon" style="background:#22c55e0e">🧊</div>
+              <div class="cargo-info"><span class="cargo-name">Cold Chain Pharma</span><span class="cargo-id">CGO-7819</span></div>
+              <span class="cargo-weight">800 Kg</span>
+              <span class="cargo-status st-arrived">Arrived</span>
+            </div>
+            <div class="cargo-row" style="--i:2">
+              <div class="cargo-icon" style="background:#3b82f60e">🏗️</div>
+              <div class="cargo-info"><span class="cargo-name">Material Konstruksi</span><span class="cargo-id">CGO-7825</span></div>
+              <span class="cargo-weight">8.1 Ton</span>
+              <span class="cargo-status st-loading">Loading</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUSTED -->
+<div class="trusted">
+  <div class="trusted-inner">
+    <span class="trusted-label">Dipercaya oleh</span>
+    <div class="trusted-logos">
+      <span class="trusted-logo">JNE Express</span>
+      <span class="trusted-logo">PELNI</span>
+      <span class="trusted-logo">Pos Indonesia</span>
+      <span class="trusted-logo">TIKI</span>
+      <span class="trusted-logo">Meratus Line</span>
+      <span class="trusted-logo">Tanto Intim</span>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="fitur">
+  <div class="reveal">
+    <div class="section-tag"><span class="bar"></span> Fitur Unggulan</div>
+    <h2 class="section-heading">Semua yang Anda Butuhkan<br>untuk Manajemen Kargo</h2>
+    <p class="section-sub">Dari tracking real-time hingga analitik biaya, CargoFlow menyediakan solusi lengkap untuk operasi logistik modern.</p>
+  </div>
+  <div class="features-grid">
+    <div class="f-card reveal"><div class="f-icon" style="background:#e8622a0e">📡</div><h3 class="f-title">Live GPS Tracking</h3><p class="f-desc">Pantau posisi setiap pengiriman secara real-time melalui GPS tracking dan integrasi IoT dengan update setiap 30 detik.</p></div>
+    <div class="f-card reveal"><div class="f-icon" style="background:#1a8a7d0e">🔄</div><h3 class="f-title">Route Optimization</h3><p class="f-desc">Algoritma AI untuk menemukan rute pengiriman terbaik, mengurangi jarak tempuh dan biaya bahan bakar hingga 35%.</p></div>
+    <div class="f-card reveal"><div class="f-icon" style="background:#3b82f60e">📊</div><h3 class="f-title">Analytics Dashboard</h3><p class="f-desc">Laporan komprehensif tentang performa pengiriman, utilisasi armada, dan analisis biaya yang mudah dipahami.</p></div>
+    <div class="f-card reveal"><div class="f-icon" style="background:#f59e0b0e">🏭</div><h3 class="f-title">Warehouse Management</h3><p class="f-desc">Kelola inventory gudang, staging area, dan loading dock dengan barcode scanning dan RFID integration.</p></div>
+    <div class="f-card reveal"><div class="f-icon" style="background:#8b5cf60e">📋</div><h3 class="f-title">Digital Documentation</h3><p class="f-desc">Bill of Lading, invoice, dan dokumen kepabeanan digital. Eliminasi paperwork dan percepat proses clearance.</p></div>
+    <div class="f-card reveal"><div class="f-icon" style="background:#ef44440e">🔔</div><h3 class="f-title">Smart Notifications</h3><p class="f-desc">Alert otomatis untuk keterlambatan, perubahan rute, anomali suhu (cold chain), dan milestone pengiriman.</p></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="cara-kerja">
+  <div class="how-inner">
+    <div class="reveal" style="text-align:center;margin-bottom:64px">
+      <div class="section-tag" style="justify-content:center"><span class="bar"></span> Cara Kerja</div>
+      <h2 class="section-heading" style="text-align:center">Mulai dalam 4 Langkah Mudah</h2>
+    </div>
+    <div class="how-grid">
+      <div class="how-step reveal">
+        <div class="how-num" style="background:#e8622a;color:#fff">1</div>
+        <h3 class="how-step-title">Daftar Akun</h3>
+        <p class="how-step-desc">Buat akun gratis dalam 2 menit tanpa kartu kredit.</p>
+      </div>
+      <div class="how-step reveal">
+        <div class="how-num" style="background:#1a8a7d;color:#fff">2</div>
+        <h3 class="how-step-title">Input Shipment</h3>
+        <p class="how-step-desc">Masukkan detail kargo, origin, destinasi, dan jadwal pengiriman.</p>
+      </div>
+      <div class="how-step reveal">
+        <div class="how-num" style="background:#3b82f6;color:#fff">3</div>
+        <h3 class="how-step-title">Track & Monitor</h3>
+        <p class="how-step-desc">Pantau status setiap shipment secara real-time via dashboard.</p>
+      </div>
+      <div class="how-step reveal">
+        <div class="how-num" style="background:#f59e0b;color:#fff">4</div>
+        <h3 class="how-step-title">Optimasi & Scale</h3>
+        <p class="how-step-desc">Gunakan analytics untuk optimasi operasi dan skalakan bisnis Anda.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="harga">
+  <div class="reveal">
+    <div class="section-tag"><span class="bar"></span> Paket Harga</div>
+    <h2 class="section-heading">Harga Transparan,<br>Tanpa Biaya Tersembunyi</h2>
+    <p class="section-sub">Mulai gratis dan tingkatkan sesuai volume pengiriman Anda. Semua paket termasuk dukungan teknis.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="p-card reveal">
+      <div class="p-plan">Starter</div>
+      <div class="p-price"><span class="curr">Rp</span>0 <span class="per">/ bulan</span></div>
+      <p class="p-tagline">Untuk bisnis yang baru memulai</p>
+      <ul class="p-features">
+        <li><span class="p-check on">✓</span> Hingga 100 shipment / bulan</li>
+        <li><span class="p-check on">✓</span> Live GPS tracking</li>
+        <li><span class="p-check on">✓</span> Dashboard standar</li>
+        <li><span class="p-check on">✓</span> Email notification</li>
+        <li><span class="p-check off">—</span> Route optimization AI</li>
+        <li><span class="p-check off">—</span> API access</li>
+      </ul>
+      <button class="p-btn p-btn-outline">Mulai Gratis</button>
+    </div>
+    <div class="p-card featured reveal">
+      <div class="p-badge">Paling Populer</div>
+      <div class="p-plan">Business</div>
+      <div class="p-price"><span class="curr">Rp</span>4.9<span style="font-size:20px">jt</span> <span class="per">/ bulan</span></div>
+      <p class="p-tagline">Untuk forwarder & distributor</p>
+      <ul class="p-features">
+        <li><span class="p-check on">✓</span> Hingga 2,000 shipment / bulan</li>
+        <li><span class="p-check on">✓</span> Semua fitur Starter</li>
+        <li><span class="p-check on">✓</span> Route optimization AI</li>
+        <li><span class="p-check on">✓</span> Warehouse management</li>
+        <li><span class="p-check on">✓</span> API access & webhook</li>
+        <li><span class="p-check off">—</span> Custom SLA</li>
+      </ul>
+      <button class="p-btn p-btn-solid">Pilih Business</button>
+    </div>
+    <div class="p-card reveal">
+      <div class="p-plan">Enterprise</div>
+      <div class="p-price" style="font-size:34px;padding-top:8px">Custom</div>
+      <p class="p-tagline">Untuk korporasi & 3PL besar</p>
+      <ul class="p-features">
+        <li><span class="p-check on">✓</span> Shipment unlimited</li>
+        <li><span class="p-check on">✓</span> Semua fitur Business</li>
+        <li><span class="p-check on">✓</span> On-premise / private cloud</li>
+        <li><span class="p-check on">✓</span> Dedicated account manager</li>
+        <li><span class="p-check on">✓</span> Custom integrations (ERP/SAP)</li>
+        <li><span class="p-check on">✓</span> SLA 99.99% uptime</li>
+      </ul>
+      <button class="p-btn p-btn-outline">Hubungi Sales</button>
+    </div>
+  </div>
+</section>
+
+<!-- DOCS -->
+<section class="docs" id="dokumentasi">
+  <div class="docs-inner">
+    <div class="reveal">
+      <div class="section-tag"><span class="bar"></span> Dokumentasi</div>
+      <h2 class="section-heading">Panduan Lengkap &<br>Referensi Developer</h2>
+      <p class="section-sub">Mulai integrasi dalam hitungan menit dengan dokumentasi yang jelas dan contoh kode siap pakai.</p>
+    </div>
+    <div class="docs-grid">
+      <a class="d-card reveal" href="#">
+        <div class="d-icon" style="background:#e8622a0e">🚀</div>
+        <div class="d-title">Quick Start</div>
+        <p class="d-desc">Setup akun, buat shipment pertama, dan pantau pengiriman dalam 10 menit.</p>
+        <span class="d-link">Mulai <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </a>
+      <a class="d-card reveal" href="#">
+        <div class="d-icon" style="background:#3b82f60e">⚡</div>
+        <div class="d-title">API Reference</div>
+        <p class="d-desc">REST API lengkap dengan endpoint tracking, shipment, webhook, dan reporting.</p>
+        <span class="d-link">Baca Docs <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </a>
+      <a class="d-card reveal" href="#">
+        <div class="d-icon" style="background:#1a8a7d0e">🔌</div>
+        <div class="d-title">Integrasi</div>
+        <p class="d-desc">Panduan integrasi SAP, Oracle, Odoo, Shopify, Tokopedia, dan lainnya.</p>
+        <span class="d-link">Lihat Guide <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </a>
+      <a class="d-card reveal" href="#">
+        <div class="d-icon" style="background:#8b5cf60e">💬</div>
+        <div class="d-title">Komunitas</div>
+        <p class="d-desc">Forum developer, contoh project, dan best practice dari pengguna lain.</p>
+        <span class="d-link">Gabung <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </a>
+    </div>
+    <div class="docs-cta-bar reveal">
+      <div class="docs-cta-text">
+        <h3>Butuh bantuan teknis?</h3>
+        <p>Tim solution engineer kami siap membantu integrasi dan onboarding.</p>
+      </div>
+      <a href="#tentang" class="btn-primary" style="flex-shrink:0">Jadwalkan Demo <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="tentang">
+  <div class="about-inner">
+    <div class="about-top">
+      <div class="about-text reveal">
+        <div class="section-tag"><span class="bar"></span> Tentang Kami</div>
+        <h2>Transformasi Logistik<br>Indonesia Melalui <span style="color:var(--orange)">Teknologi</span></h2>
+        <p>CargoFlow lahir dari pengalaman langsung mengelola rantai pasok di kepulauan Indonesia. Kami memahami kompleksitas logistik — mulai dari pengiriman antar pulau, cold chain, hingga last-mile delivery di daerah terpencil.</p>
+        <p>Dengan tim yang terdiri dari veteran logistik dan engineer kelas dunia, kami membangun platform yang benar-benar memahami kebutuhan pelaku logistik Indonesia.</p>
+      </div>
+      <div class="about-numbers reveal">
+        <div class="about-numbers" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="about-num-card"><div class="about-num-val" style="color:var(--orange)">5+</div><div class="about-num-lbl">Tahun Beroperasi</div></div>
+          <div class="about-num-card"><div class="about-num-val" style="color:var(--teal)">320+</div><div class="about-num-lbl">Perusahaan Partner</div></div>
+          <div class="about-num-card"><div class="about-num-val" style="color:#3b82f6">85+</div><div class="about-num-lbl">Engineer & Staff</div></div>
+          <div class="about-num-card"><div class="about-num-val" style="color:#f59e0b">34</div><div class="about-num-lbl">Provinsi Terlayani</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="about-team-title reveal">
+      <div class="section-tag" style="justify-content:center"><span class="bar"></span> Tim Kami</div>
+      <h2 class="section-heading" style="text-align:center">Dipimpin Para Praktisi</h2>
+      <p class="section-sub" style="text-align:center;margin-left:auto;margin-right:auto">Kombinasi keahlian logistik & teknologi untuk membangun solusi yang benar-benar relevan.</p>
+    </div>
+    <div class="team-grid">
+      <div class="t-card reveal"><div class="t-avatar" style="background:linear-gradient(135deg,#e8622a15,#e8622a08)">👨‍💼</div><div class="t-name">Hendra Wijaya</div><div class="t-role">CEO & Founder</div><div class="t-bio">15+ tahun di industri freight forwarding & supply chain</div></div>
+      <div class="t-card reveal"><div class="t-avatar" style="background:linear-gradient(135deg,#1a8a7d15,#1a8a7d08)">👩‍💻</div><div class="t-name">Maya Putri</div><div class="t-role">CTO</div><div class="t-bio">Ex-Gojek, spesialis distributed systems & geo-tracking</div></div>
+      <div class="t-card reveal"><div class="t-avatar" style="background:linear-gradient(135deg,#3b82f615,#3b82f608)">👨‍🔬</div><div class="t-name">Rizal Fauzi</div><div class="t-role">VP Product</div><div class="t-bio">Ahli route optimization & operations research</div></div>
+      <div class="t-card reveal"><div class="t-avatar" style="background:linear-gradient(135deg,#f59e0b15,#f59e0b08)">👩‍🏫</div><div class="t-name">Dewi Anggraini</div><div class="t-role">VP Sales</div><div class="t-bio">Mantan VP di perusahaan 3PL multinasional</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-box reveal">
+    <h2>Siap Optimalkan<br>Logistik Anda?</h2>
+    <p>Mulai gratis — tanpa kartu kredit, tanpa komitmen.</p>
+    <div class="cta-btns">
+      <a href="#harga" class="btn-primary">Coba Gratis 30 Hari <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      <a href="#tentang" class="btn-ghost" style="color:#fff;border-color:#2a3550">Hubungi Sales</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-left">© 2026 CargoFlow. All rights reserved.</div>
+  <div class="foot-links">
+    <a href="#">Kebijakan Privasi</a>
+    <a href="#">Syarat & Ketentuan</a>
+    <a href="#tentang">Kontak</a>
+  </div>
+</footer>
+
+<script>
+  // Active nav
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-center a');
+  const navbar = document.getElementById('navbar');
+
+  function updateNav() {
+    const sy = window.scrollY + 120;
+    sections.forEach(s => {
+      const id = s.id, top = s.offsetTop, h = s.offsetHeight;
+      if (sy >= top && sy < top + h) {
+        navLinks.forEach(l => {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+    navbar.classList.toggle('scrolled', window.scrollY > 40);
+  }
+  window.addEventListener('scroll', updateNav, { passive: true });
+  updateNav();
+
+  // Reveal
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+
+</body>
+</html>
